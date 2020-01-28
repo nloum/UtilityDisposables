@@ -19,4 +19,4 @@ jobs:
     - name: Publish NuGet package
       env:
         DOTNET_CLI_TELEMETRY_OPTOUT: 1
-      run: dotnet nuget push bin/Release/UtilityDisposables.1.0.0-alpha1.nupkg -k "${{ secrets.GITHUB_TOKEN }}" -s "https://nuget.pkg.github.com/nloum/index.json"
+      run: dotnet nuget push UtilityDisposables/UtilityDisposables/bin/Release/UtilityDisposables.1.0.0-alpha1.nupkg -k "${{ secrets.GITHUB_TOKEN }}" -s "https://nuget.pkg.github.com/nloum/index.json"
