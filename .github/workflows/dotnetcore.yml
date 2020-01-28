@@ -25,6 +25,24 @@ jobs:
     - name: Use GitVersion
       id: gitversion # step id used as reference for output values
       uses: gittools/actions/gitversion/execute@v0.6.1
+    - name: ls directory
+      if: always()
+      run: ls /opt
+    - name: ls directory
+      if: always()
+      run: ls /opt/hostedtoolcache
+    - name: ls directory
+      if: always()
+      run: ls /opt/hostedtoolcache/dncs
+    - name: ls directory
+      if: always()
+      run: ls /opt/hostedtoolcache/dncs/3.1.101
+    - name: ls directory
+      if: always()
+      run: ls /opt/hostedtoolcache/dncs/3.1.101/x64
+    - name: ls directory
+      if: always()
+      run: ls /opt/hostedtoolcache/dncs/3.1.101/x64/dotnet
     - run: |
         echo "Major: ${{ steps.gitversion.outputs.major }}"
         echo "Minor: ${{ steps.gitversion.outputs.minor }}"
