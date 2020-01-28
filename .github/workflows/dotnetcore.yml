@@ -15,37 +15,16 @@ jobs:
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 3.1.101
+        dotnet-version: 2.2.108
     - name: Build with dotnet
       run: dotnet build --configuration Release
     - name: Install GitVersion
       uses: gittools/actions/gitversion/setup@v0.6.1
       with:
-          versionSpec: '5.1.x'
+          versionSpec: '5.1.2'
     - name: Use GitVersion
       id: gitversion # step id used as reference for output values
       uses: gittools/actions/gitversion/execute@v0.6.1
-    - name: ls directory
-      if: always()
-      run: ls /opt
-    - name: ls directory
-      if: always()
-      run: ls /opt/hostedtoolcache
-    - name: ls directory
-      if: always()
-      run: ls /opt/hostedtoolcache/dncs
-    - name: ls directory
-      if: always()
-      run: ls /opt/hostedtoolcache/dncs/3.1.101
-    - name: ls directory
-      if: always()
-      run: ls /opt/hostedtoolcache/dncs/3.1.101/x64
-    - name: ls directory
-      if: always()
-      run: ls /opt/hostedtoolcache/dncs/3.1.101/x64/dotnet
-    - name: stat file
-      if: always()
-      run: stat /opt/hostedtoolcache/dncs/3.1.101/x64/dotnet
     - run: |
         echo "Major: ${{ steps.gitversion.outputs.major }}"
         echo "Minor: ${{ steps.gitversion.outputs.minor }}"
