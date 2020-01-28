@@ -15,4 +15,4 @@ jobs:
     - name: Build NuGet package
       run: dotnet pack --configuration Release
     - name: Publish NuGet package
-      run: dotnet nuget push bin/Release/UtilityDisposables.nupkg --source "github"
+      run: dotnet nuget push bin/Release/UtilityDisposables.nupkg -k "${{ secrets.GITHUB_TOKEN }}" -s "https://nuget.pkg.github.com/nloum/index.json"
