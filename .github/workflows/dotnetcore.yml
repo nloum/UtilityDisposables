@@ -43,6 +43,9 @@ jobs:
     - name: ls directory
       if: always()
       run: ls /opt/hostedtoolcache/dncs/3.1.101/x64/dotnet
+    - name: stat file
+      if: always()
+      run: stat /opt/hostedtoolcache/dncs/3.1.101/x64/dotnet
     - run: |
         echo "Major: ${{ steps.gitversion.outputs.major }}"
         echo "Minor: ${{ steps.gitversion.outputs.minor }}"
