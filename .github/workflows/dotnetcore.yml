@@ -13,6 +13,6 @@ jobs:
     - name: Fetch all history for all tags and branches
       run: git fetch --prune --unshallow
     - name: Build NuGet package
-      run: dotnet pack --configuration Release
+      run: dotnet pack -p:PackageVersion=1.0.0-alpha1 --configuration Release
     - name: Publish NuGet package
-      run: dotnet nuget push bin/Release/UtilityDisposables.nupkg -k "${{ secrets.GITHUB_TOKEN }}" -s "https://nuget.pkg.github.com/nloum/index.json"
+      run: dotnet nuget push bin/Release/UtilityDisposables.1.0.0-alpha1.nupkg -k "${{ secrets.GITHUB_TOKEN }}" -s "https://nuget.pkg.github.com/nloum/index.json"
