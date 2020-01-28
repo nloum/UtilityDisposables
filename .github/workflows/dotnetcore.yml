@@ -16,10 +16,11 @@ jobs:
       env:
         DOTNET_CLI_TELEMETRY_OPTOUT: 1
       run: dotnet pack -p:PackageVersion=1.0.0-alpha1 --configuration Release
-    - name: Setup Nuget.exe
-      uses: warrenbuckley/Setup-Nuget@v1
-    - name: Add GPR Source
-      run: nuget sources add -name "GPR" -Source https://nuget.pkg.github.com/nloum/index.json -Username nloum -Password ${{ secrets.GITHUB_TOKEN }}
+    - name: Set NuGet creds
+      shell: pwsh
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: ./Set-NuGetCredentials -ConfigFile ./nuget.config -Source gpr-test -Username zivkan -Password $env:GITHUB_TOKEN
     - name: Publish NuGet package
       env:
         DOTNET_CLI_TELEMETRY_OPTOUT: 1
