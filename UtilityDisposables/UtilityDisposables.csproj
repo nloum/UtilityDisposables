@@ -6,5 +6,6 @@
     <RepositoryUrl>https://github.com/nloum/UtilityDisposables</RepositoryUrl>
     <PackageId>UtilityDisposables</PackageId>
     <Authors>nloum</Authors>
+    <ReleaseVersion>1.0.0-alpha2</ReleaseVersion>
   </PropertyGroup>
 </Project>

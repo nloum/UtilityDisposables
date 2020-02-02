@@ -15,15 +15,13 @@ jobs:
     - name: Build NuGet package
       env:
         DOTNET_CLI_TELEMETRY_OPTOUT: 1
-      run: dotnet pack -p:PackageVersion=1.0.0-alpha1 --configuration Release
+      run: dotnet pack --configuration Release
     - name: Set NuGet creds
       shell: pwsh
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: ./Set-NuGetCredentials -ConfigFile ./nuget.config -Source github -Username nloum -Password $env:GITHUB_TOKEN
-    - name: Show nuget config
-      run: cat ./nuget.config
     - name: Publish NuGet package
       env:
         DOTNET_CLI_TELEMETRY_OPTOUT: 1
-      run: dotnet nuget push UtilityDisposables/bin/Release/UtilityDisposables.1.0.0-alpha1.nupkg -s "github"
+      run: dotnet nuget push UtilityDisposables/bin/Release/*.nupkg -s "github"
