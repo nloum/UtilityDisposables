@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UtilityDisposables", "UtilityDisposables\UtilityDisposables.csproj", "{75EE42A6-D0C9-4B1A-9FB2-5413D1D2A7BB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UtilityDisposables.Tests", "UtilityDisposables.Tests\UtilityDisposables.Tests.csproj", "{BC7FDBBC-4B73-4FC4-9475-00AB73CC948F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,5 +15,9 @@ Global
 		{75EE42A6-D0C9-4B1A-9FB2-5413D1D2A7BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{75EE42A6-D0C9-4B1A-9FB2-5413D1D2A7BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{75EE42A6-D0C9-4B1A-9FB2-5413D1D2A7BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC7FDBBC-4B73-4FC4-9475-00AB73CC948F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC7FDBBC-4B73-4FC4-9475-00AB73CC948F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC7FDBBC-4B73-4FC4-9475-00AB73CC948F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC7FDBBC-4B73-4FC4-9475-00AB73CC948F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

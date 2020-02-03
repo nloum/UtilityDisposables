@@ -16,7 +16,7 @@ jobs:
       env:
         DOTNET_CLI_TELEMETRY_OPTOUT: 1
       run: dotnet pack --configuration Release
-    - name: Set NuGet creds
+    - name: Set NuGet credentials
       shell: pwsh
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -25,3 +25,16 @@ jobs:
       env:
         DOTNET_CLI_TELEMETRY_OPTOUT: 1
       run: dotnet nuget push UtilityDisposables/bin/Release/*.nupkg -s "github"
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Fetch all history for all tags and branches
+      run: git fetch --prune --unshallow
+    - name: dotnet test
+      env:
+        DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      run: dotnet test --logger trx
+
