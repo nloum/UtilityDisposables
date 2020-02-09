@@ -19,7 +19,7 @@ jobs:
       env:
         DOTNET_CLI_TELEMETRY_OPTOUT: 1
       run: dotnet pack --configuration Release
-      - name: Publish NuGet package
+    - name: Publish NuGet package
       run: dotnet nuget push UtilityDisposables/bin/Release/*.nupkg --api-key $NUGET_API_KEY -s https://api.nuget.org/v3/index.json
       env:
         DOTNET_CLI_TELEMETRY_OPTOUT: 1
