@@ -35,8 +35,21 @@ namespace UtilityDisposables
             {
                 firstDisposable.Dispose();
                 var restResult = rest();
-                if (restResult != null)
-                    restResult.Dispose();
+                restResult?.Dispose();
+            });
+        }
+        
+        /// <summary>
+        /// Returns an IDisposable that, when disposed, first disposes firstDisposable, and then calls rest;
+        /// if rest returns null, nothing more happens, but if rest returns a non-null IDisposable, then that
+        /// also is disposed.
+        /// </summary>
+        public static IDisposable DisposeWith(this IDisposable firstDisposable, Action rest)
+        {
+            return new AnonymousDisposable(() =>
+            {
+                firstDisposable.Dispose();
+                rest();
             });
         }
     }
