@@ -11,15 +11,17 @@ using Nuke.Common.ProjectModel;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.GitVersion;
+using Nuke.Common.Tools.Npm;
 using Nuke.Common.Utilities.Collections;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
+using static Nuke.Common.Tools.Npm.NpmTasks;
 
 [CheckBuildProjectConfigurations]
 [UnsetVisualStudioEnvironmentVariables]
 [GitHubActions("dotnetcore",
 	GitHubActionsImage.Ubuntu1804,
-	ImportSecrets = new[]{ "NUGET_API_KEY" },
+	ImportSecrets = new[]{ "NUGET_API_KEY", "NETLIFY_PAT" },
 	AutoGenerate = true,
 	On = new [] { GitHubActionsTrigger.Push },
 	InvokedTargets = new [] {"Test", "Push"}
@@ -38,8 +40,10 @@ class Build : NukeBuild
     readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
     [Parameter("NuGet server URL.")]
 	readonly string NugetSource = "https://api.nuget.org/v3/index.json";
-    [Parameter("API Key for the NuGet server.")]
+	[Parameter("API Key for the NuGet server.")]
 	readonly string NugetApiKey;
+	[Parameter("Personal authentication token to push CI website to Netlify")]
+	readonly string NetlifyPat;
 	[Parameter("Version to use for package.")]
 	readonly string Version;
 
@@ -52,6 +56,7 @@ class Build : NukeBuild
 	
     AbsolutePath SourceDirectory => RootDirectory / "src";
     AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
+    AbsolutePath WebsiteDirectory => RootDirectory / "website";
 
     Project UtilityDisposablesProject => Solution.GetProject("UtilityDisposables");
     
@@ -118,6 +123,26 @@ class Build : NukeBuild
 			            .SetProjectFile(v))
             );
         });
+
+    Target Website => _ => _
+	    .DependsOn(Clean, Test)
+	    .Executes(() =>
+	    {
+		    var gitVersion = GetGitVersion();
+
+		    NpmInstall(s => s
+			    .AddPackages("gatsby-cli", "netlify-cli")
+			    .SetGlobal(true));
+
+		    NpmInstall(s => s
+			    .SetWorkingDirectory(WebsiteDirectory));
+		    
+		    ProcessTasks.StartProcess("gatsby", "build", WebsiteDirectory).WaitForExit();
+		    ProcessTasks.StartProcess("netlify", "deploy --dir=website/public", RootDirectory, environmentVariables: new Dictionary<string, string>()
+		    {
+			    {"NETLIFY_AUTH_TOKEN", NetlifyPat}
+		    }).WaitForExit();
+	    });
 
     Target Pack => _ => _
         .DependsOn(Clean, Test)
