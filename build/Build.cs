@@ -76,25 +76,23 @@ class Build : NukeBuild
     Target Compile => _ => _
         .DependsOn(Restore)
         .Executes(() =>
-        {
-	        var gitVersion = GetGitVersion();
-	        
+        {   
             DotNetBuild(s => s
                 .EnableNoRestore()
                 .SetProjectFile(Solution)
                 .SetConfiguration(Configuration)
-                .SetAssemblyVersion(gitVersion.AssemblySemVer)
-                .SetFileVersion(Version ?? gitVersion.AssemblySemFileVer)
-                .SetInformationalVersion(Version ?? gitVersion.InformationalVersion)
+                .SetAssemblyVersion(Version + ".0")
+                .SetFileVersion(Version)
+                .SetInformationalVersion(Version)
 			);
 
             DotNetPublish(s => s
 				.EnableNoRestore()
 				.EnableNoBuild()
 				.SetConfiguration(Configuration)
-				.SetAssemblyVersion(gitVersion.AssemblySemVer)
-				.SetFileVersion(Version ?? gitVersion.AssemblySemFileVer)
-				.SetInformationalVersion(Version ?? gitVersion.InformationalVersion)
+				.SetAssemblyVersion(Version + ".0")
+				.SetFileVersion(Version)
+				.SetInformationalVersion(Version)
 				.CombineWith(
 					from project in new[] { UtilityDisposablesProject }
 					from framework in project.GetTargetFrameworks()
@@ -124,15 +122,13 @@ class Build : NukeBuild
 		.Requires(() => Configuration == Configuration.Release)
         .Executes(() =>
         {
-	        var gitVersion = GetGitVersion();
-	        
             DotNetPack(s => s
                 .EnableNoRestore()
                 .EnableNoBuild()
 				.SetProject(Solution)
                 .SetConfiguration(Configuration)
                 .SetOutputDirectory(ArtifactsDirectory)
-                .SetVersion(Version ?? gitVersion.NuGetVersionV2)
+                .SetVersion(Version)
 				.SetIncludeSymbols(true)
 				.SetSymbolPackageFormat(DotNetSymbolPackageFormat.snupkg)
             );
@@ -147,17 +143,10 @@ class Build : NukeBuild
             DotNetNuGetPush(s => s
 				.SetSource(NugetSource)
 				.SetApiKey(NugetApiKey)
+				.SetSkipDuplicate(true)
 				.CombineWith(ArtifactsDirectory.GlobFiles("*.nupkg"), (s, v) => s
 					.SetTargetPath(v)
 				)
             );
         });
-
-    private GitVersion GetGitVersion()
-    {
-	    var package = NuGetPackageResolver.GetGlobalInstalledPackage("GitVersion.Tool", "5.2.3", null);
-	    var settings = new GitVersionSettings().SetToolPath(package.Directory / "tools/netcoreapp3.1/any/gitversion.dll");
-	    var gitVersion = GitVersionTasks.GitVersion(settings).Result;
-	    return gitVersion;
-    }
 }
