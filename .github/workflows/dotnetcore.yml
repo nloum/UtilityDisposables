@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v1
-      - name: Run './build.cmd '
-        run: ./build.cmd 
+      - name: Run './build.cmd Test Push'
+        run: ./build.cmd Test Push
         env:
             NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}

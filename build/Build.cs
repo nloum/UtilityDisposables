@@ -21,7 +21,9 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
 	GitHubActionsImage.Ubuntu1804,
 	ImportSecrets = new[]{ "NUGET_API_KEY" },
 	AutoGenerate = true,
-	On = new [] { GitHubActionsTrigger.Push, GitHubActionsTrigger.PullRequest })]
+	On = new [] { GitHubActionsTrigger.Push, GitHubActionsTrigger.PullRequest },
+	InvokedTargets = new [] {"Test", "Push"}
+	)]
 class Build : NukeBuild
 {
     /// Support plugins are available for:
