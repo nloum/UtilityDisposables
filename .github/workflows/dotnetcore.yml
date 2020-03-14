@@ -16,7 +16,7 @@
 
 name: dotnetcore
 
-on:
+on: [push, pull_request]
 
 jobs:
   ubuntu-18_04:
@@ -27,4 +27,4 @@ jobs:
       - name: Run './build.cmd '
         run: ./build.cmd 
         env:
-            NUGET_API_TOKEN: ${{ secrets.NUGET_API_TOKEN }}
+            NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}

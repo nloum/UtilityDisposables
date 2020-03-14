@@ -3,6 +3,7 @@ using System.Linq;
 using Nuke.Common;
 using Nuke.Common.CI;
 using Nuke.Common.CI.GitHubActions;
+using Nuke.Common.CI.GitHubActions.Configuration;
 using Nuke.Common.Execution;
 using Nuke.Common.Git;
 using Nuke.Common.IO;
@@ -18,8 +19,9 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
 [UnsetVisualStudioEnvironmentVariables]
 [GitHubActions("dotnetcore",
 	GitHubActionsImage.Ubuntu1804,
-	ImportSecrets = new[]{ "NUGET_API_TOKEN" },
-	AutoGenerate = true)]
+	ImportSecrets = new[]{ "NUGET_API_KEY" },
+	AutoGenerate = true,
+	On = new [] { GitHubActionsTrigger.Push, GitHubActionsTrigger.PullRequest })]
 class Build : NukeBuild
 {
     /// Support plugins are available for:
