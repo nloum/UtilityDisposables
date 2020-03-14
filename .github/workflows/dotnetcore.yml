@@ -16,7 +16,7 @@
 
 name: dotnetcore
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
   ubuntu-18_04:
