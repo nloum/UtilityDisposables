@@ -1,7 +1,9 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Nuke.Common;
 using Nuke.Common.CI;
+using Nuke.Common.CI.AzurePipelines;
 using Nuke.Common.CI.GitHubActions;
 using Nuke.Common.CI.GitHubActions.Configuration;
 using Nuke.Common.Execution;
@@ -9,13 +11,17 @@ using Nuke.Common.Git;
 using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
 using Nuke.Common.Tooling;
+using Nuke.Common.Tools.Coverlet;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.GitVersion;
 using Nuke.Common.Tools.Npm;
+using Nuke.Common.Tools.ReportGenerator;
 using Nuke.Common.Utilities.Collections;
+using static Nuke.Common.IO.CompressionTasks;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 using static Nuke.Common.Tools.Npm.NpmTasks;
+using static Nuke.Common.Tools.ReportGenerator.ReportGeneratorTasks;
 
 [CheckBuildProjectConfigurations]
 [UnsetVisualStudioEnvironmentVariables]
@@ -57,6 +63,7 @@ class Build : NukeBuild
     AbsolutePath SourceDirectory => RootDirectory / "src";
     AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
     AbsolutePath WebsiteDirectory => RootDirectory / "website";
+    AbsolutePath TestResultDirectory => ArtifactsDirectory / "test-results";
 
     Project UtilityDisposablesProject => Solution.GetProject("UtilityDisposables");
     
@@ -109,41 +116,65 @@ class Build : NukeBuild
 				)
 			);
         });
-
+    
     Target Test => _ => _
         .DependsOn(Compile)
+        .Produces(TestResultDirectory / "*.trx")
+        .Produces(TestResultDirectory / "*.xml")
         .Executes(() =>
         {
-            DotNetTest(s => s
-	            .SetConfiguration(Configuration)
-	            .EnableNoRestore()
-                .EnableNoBuild()
-	            .CombineWith(
-		            TestProjects, (cs, v) => cs
-			            .SetProjectFile(v))
-            );
+            DotNetTest(_ => _
+                .SetConfiguration(Configuration)
+                .SetNoBuild(InvokedTargets.Contains(Compile))
+                .ResetVerbosity()
+                .SetResultsDirectory(TestResultDirectory)
+                .When(InvokedTargets.Contains(Coverage) || IsServerBuild, _ => _
+                    .EnableCollectCoverage()
+                    .SetCoverletOutputFormat(CoverletOutputFormat.cobertura)
+                    .SetExcludeByFile("*.Generated.cs")
+                    .When(IsServerBuild, _ => _
+                        .EnableUseSourceLink()))
+                .CombineWith(TestProjects, (_, v) => _
+                    .SetProjectFile(v)
+                    .SetLogger($"trx;LogFileName={v.Name}.trx")
+                    .When(InvokedTargets.Contains(Coverage) || IsServerBuild, _ => _
+                        .SetCoverletOutput(TestResultDirectory / $"{v.Name}.xml"))));
+
+            // ArtifactsDirectory.GlobFiles("*.trx").ForEach(x =>
+            //     AzurePipelines?.PublishTestResults(
+            //         type: AzurePipelinesTestResultsType.VSTest,
+            //         title: $"{Path.GetFileNameWithoutExtension(x)} ({AzurePipelines.StageDisplayName})",
+            //         files: new string[] { x }));
         });
 
-    Target Website => _ => _
-	    .DependsOn(Clean, Test)
-	    .Executes(() =>
-	    {
-		    var gitVersion = GetGitVersion();
+    string CoverageReportDirectory => ArtifactsDirectory / "coverage-report";
+    // string CoverageReportArchive => ArtifactsDirectory / "coverage-report.zip";
 
-		    NpmInstall(s => s
-			    .AddPackages("gatsby-cli", "netlify-cli")
-			    .SetGlobal(true));
+    Target Coverage => _ => _
+        .DependsOn(Test)
+        .TriggeredBy(Test)
+        .Consumes(Test)
+        //.Produces(CoverageReportArchive)
+        .Executes(() =>
+        {
+            ReportGenerator(_ => _
+                .SetReports(TestResultDirectory / "*.xml")
+                .SetReportTypes(ReportTypes.HtmlInline)
+                .SetTargetDirectory(CoverageReportDirectory)
+                .SetFramework("netcoreapp2.1"));
 
-		    NpmInstall(s => s
-			    .SetWorkingDirectory(WebsiteDirectory));
-		    
-		    ProcessTasks.StartProcess("gatsby", "build", WebsiteDirectory).WaitForExit();
-		    ProcessTasks.StartProcess("netlify", "deploy --dir=website/public", RootDirectory, environmentVariables: new Dictionary<string, string>()
-		    {
-			    {"NETLIFY_AUTH_TOKEN", NetlifyPat}
-		    }).WaitForExit();
-	    });
-
+            // TestResultDirectory.GlobFiles("*.xml").ForEach(x =>
+            //     AzurePipelines?.PublishCodeCoverage(
+            //         AzurePipelinesCodeCoverageToolType.Cobertura,
+            //         x,
+            //         CoverageReportDirectory));
+            //
+            // CompressZip(
+            //     directory: CoverageReportDirectory,
+            //     archiveFile: CoverageReportArchive,
+            //     fileMode: FileMode.Create);
+        });
+    
     Target Pack => _ => _
         .DependsOn(Clean, Test)
 		.Requires(() => Configuration == Configuration.Release)
