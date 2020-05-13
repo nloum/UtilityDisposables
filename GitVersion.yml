@@ -1,4 +1,5 @@
 assembly-versioning-scheme: MajorMinorPatch
+increment: patch
 next-version: 1.0
 branches:
   master:
