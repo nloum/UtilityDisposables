@@ -30,7 +30,7 @@ using static Nuke.Common.Tools.ReportGenerator.ReportGeneratorTasks;
 	ImportSecrets = new[]{ "NUGET_API_KEY", "NETLIFY_PAT" },
 	AutoGenerate = true,
 	On = new [] { GitHubActionsTrigger.Push },
-	InvokedTargets = new [] {"Test", "Push"}
+	InvokedTargets = new [] {"Push"}
 	)]
 class Build : NukeBuild
 {
@@ -153,7 +153,11 @@ class Build : NukeBuild
         //.Produces(CoverageReportArchive)
         .Executes(() =>
         {
-            ReportGenerator(_ => _
+	        var package = NuGetPackageResolver.GetGlobalInstalledPackage("dotnet-reportgenerator-globaltool", "4.5.8", null);
+	        //var settings = new GitVersionSettings().SetToolPath( package.Directory / "tools/netcoreapp3.1/any/gitversion.dll");
+
+	        ReportGenerator(_ => _
+	            .SetToolPath(package.Directory / "tools/netcoreapp3.1/any/reportgenerator.dll")
                 .SetReports(TestResultDirectory / "*.xml")
                 .SetReportTypes(ReportTypes.HtmlInline)
                 .SetTargetDirectory(CoverageReportDirectory)
@@ -173,7 +177,7 @@ class Build : NukeBuild
     
     Target Pack => _ => _
         .DependsOn(Compile)
-		//.Requires(() => Configuration == Configuration.Release)
+		.Requires(() => Configuration == Configuration.Release)
         .Executes(() =>
         {
             DotNetPack(s => s
