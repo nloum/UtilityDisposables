@@ -16,7 +16,7 @@
 
 name: dotnetcore
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
   ubuntu-18_04:
@@ -28,3 +28,4 @@ jobs:
         run: ./build.cmd Test Push
         env:
             NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+            NETLIFY_PAT: ${{ secrets.NETLIFY_PAT }}
