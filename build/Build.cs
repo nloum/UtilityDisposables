@@ -50,15 +50,13 @@ class Build : NukeBuild
 	readonly string NugetApiKey;
 	[Parameter("Personal authentication token to push CI website to Netlify")]
 	readonly string NetlifyPat;
-	[Parameter("Version to use for package.")]
-	readonly string Version;
 
     [Solution]
 	readonly Solution Solution;
     [GitRepository]
 	readonly GitRepository GitRepository;
-    //[GitVersion]
-	//readonly GitVersion GitVersion;
+ //    [GitVersion]
+	// readonly GitVersion GitVersion;
 	
     AbsolutePath SourceDirectory => RootDirectory / "src";
     AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
@@ -89,24 +87,22 @@ class Build : NukeBuild
         .DependsOn(Restore)
         .Executes(() =>
         {
-	        var gitVersion = GetGitVersion();
-	        
             DotNetBuild(s => s
                 .EnableNoRestore()
                 .SetProjectFile(Solution)
                 .SetConfiguration(Configuration)
-                .SetAssemblyVersion(gitVersion.AssemblySemVer)
-                .SetFileVersion(Version ?? gitVersion.AssemblySemFileVer)
-                .SetInformationalVersion(Version ?? gitVersion.InformationalVersion)
+                .SetAssemblyVersion(GitVersion.AssemblySemVer)
+                .SetFileVersion(GitVersion.AssemblySemFileVer)
+                .SetInformationalVersion(GitVersion.InformationalVersion)
 			);
 
             DotNetPublish(s => s
 				.EnableNoRestore()
 				.EnableNoBuild()
 				.SetConfiguration(Configuration)
-				.SetAssemblyVersion(gitVersion.AssemblySemVer)
-				.SetFileVersion(Version ?? gitVersion.AssemblySemFileVer)
-				.SetInformationalVersion(Version ?? gitVersion.InformationalVersion)
+				.SetAssemblyVersion(GitVersion.AssemblySemVer)
+				.SetFileVersion(GitVersion.AssemblySemFileVer)
+				.SetInformationalVersion(GitVersion.InformationalVersion)
 				.CombineWith(
 					from project in new[] { UtilityDisposablesProject }
 					from framework in project.GetTargetFrameworks()
@@ -176,19 +172,17 @@ class Build : NukeBuild
         });
     
     Target Pack => _ => _
-        .DependsOn(Clean, Test)
-		.Requires(() => Configuration == Configuration.Release)
+        .DependsOn(Compile)
+		//.Requires(() => Configuration == Configuration.Release)
         .Executes(() =>
         {
-	        var gitVersion = GetGitVersion();
-	        
             DotNetPack(s => s
                 .EnableNoRestore()
                 .EnableNoBuild()
 				.SetProject(Solution)
                 .SetConfiguration(Configuration)
                 .SetOutputDirectory(ArtifactsDirectory)
-                .SetVersion(Version ?? gitVersion.NuGetVersionV2)
+                .SetVersion(GitVersion.NuGetVersionV2)
 				.SetIncludeSymbols(true)
 				.SetSymbolPackageFormat(DotNetSymbolPackageFormat.snupkg)
             );
@@ -210,11 +204,15 @@ class Build : NukeBuild
             );
         });
 
-    private GitVersion GetGitVersion()
+
+    public GitVersion GitVersion
     {
-	    var package = NuGetPackageResolver.GetGlobalInstalledPackage("GitVersion.Tool", "5.2.3", null);
-	    var settings = new GitVersionSettings().SetToolPath(package.Directory / "tools/netcoreapp3.1/any/gitversion.dll");
-	    var gitVersion = GitVersionTasks.GitVersion(settings).Result;
-	    return gitVersion;
+	    get
+	    {
+		    var package = NuGetPackageResolver.GetGlobalInstalledPackage("GitVersion.Tool", "5.3.3", null);
+		    var settings = new GitVersionSettings().SetToolPath(package.Directory / "tools/netcoreapp3.1/any/gitversion.dll");
+		    var gitVersion = GitVersionTasks.GitVersion(settings).Result;
+		    return gitVersion;
+	    }
     }
 }
